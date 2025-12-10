@@ -228,10 +228,8 @@ function App() {
             onClick={restAtBonfire}
             title="Rest at Bonfire"
           >
-            <div className='emojis-container'>
             <div className="flame">🔥</div>
             <div className="bonfire-base">⚱️</div>
-            </div>
           </button>
           {bonfireLit && <p className="bonfire-text">Bonfire Lit</p>}
         </div>
