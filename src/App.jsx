@@ -15,13 +15,18 @@ function App() {
     document.body.className = isDarkMode ? 'dark-mode' : 'light-mode'
   }, [isDarkMode])
 
+  const playSuccessSound = () => {
+    const audio = new Audio('/success.mp3')
+    audio.volume = 0.5
+    audio.play().catch(err => console.log('Audio play failed:', err))
+  }
+
   const addTask = () => {
     if (newTask.trim()) {
       setTasks([...tasks, { id: Date.now(), text: newTask, completed: false }])
       setNewTask('')
       
       if (isDarkMode) {
-        // Bonfire flickers when task added in dark mode
         setBonfireLit(true)
         setTimeout(() => setBonfireLit(false), 500)
       }
@@ -35,11 +40,11 @@ function App() {
     
     const task = tasks.find(t => t.id === id)
     if (!task.completed && isDarkMode) {
-      // Award souls for completing tasks in dark mode
+      playSuccessSound() // Play success sound
+      // eslint-disable-next-line react-hooks/purity
       const soulsEarned = Math.floor(Math.random() * 50) + 50
       setSouls(prev => prev + soulsEarned)
       
-      // Check for level up
       const newSouls = souls + soulsEarned
       const newLevel = Math.floor(newSouls / 500) + 1
       if (newLevel > level) {
@@ -47,13 +52,14 @@ function App() {
         unlockAchievement(`Level ${newLevel} Reached`, `You've ascended to level ${newLevel}`)
       }
       
-      // Random achievement chances
-      if (Math.random() < 0.2) {
+            // eslint-disable-next-line react-hooks/purity
+      if (Math?.random() < 0.2) {
         const achievements = [
           { title: "Bonfire Keeper", desc: "Complete a task at the bonfire" },
           { title: "Undead Warrior", desc: "Another task vanquished" },
           { title: "Praise the Sun", desc: "Productivity intensifies" }
         ]
+              // eslint-disable-next-line react-hooks/purity
         const random = achievements[Math.floor(Math.random() * achievements.length)]
         unlockAchievement(random.title, random.desc)
       }
@@ -65,6 +71,7 @@ function App() {
   }
 
   const unlockAchievement = (title, description) => {
+          // eslint-disable-next-line react-hooks/purity
     const newAch = { title, description, id: Date.now() }
     setAchievements(prev => [...prev, newAch])
     setShowAchievement(newAch)
@@ -79,27 +86,23 @@ function App() {
 
   const restAtBonfire = () => {
     setBonfireLit(!bonfireLit)
-    // Save progress animation
   }
 
   return (
+    <div className="outer-container">
     <div className={`app-container ${isDarkMode ? 'dark' : 'light'}`}>
       {/* Theme Toggle */}
       <div className="theme-toggle-container">
+        <span className="toggle-label">
+          {isDarkMode ? 'Dark Souls Mode' : 'Minimalist Mode'}
+        </span>
         <button 
           className={`theme-toggle ${isDarkMode ? 'dark-toggle' : 'light-toggle'}`}
           onClick={() => setIsDarkMode(!isDarkMode)}
           aria-label="Toggle theme"
         >
-          {isDarkMode ? (
-            <span className="toggle-icon">🔥</span>
-          ) : (
-            <span className="toggle-icon">☀️</span>
-          )}
+          <span className="toggle-icon">{isDarkMode ? '🔥' : '☀️'}</span>
         </button>
-        <span className="toggle-label">
-          {isDarkMode ? 'Dark Souls Mode' : 'Minimalist Mode'}
-        </span>
       </div>
 
       {/* Header */}
@@ -115,15 +118,15 @@ function App() {
         </h1>
         {isDarkMode && (
           <div className="stats-bar">
-            <div className="stat">
+            <div className="stat souls-stat">
               <span className="stat-label">Souls</span>
               <span className="stat-value souls-count">{souls}</span>
             </div>
-            <div className="stat">
+            <div className="stat level-stat">
               <span className="stat-label">Level</span>
               <span className="stat-value">{level}</span>
             </div>
-            <div className="stat">
+            <div className="stat tasks-stat">
               <span className="stat-label">Tasks</span>
               <span className="stat-value">{tasks.filter(t => t.completed).length}/{tasks.length}</span>
             </div>
@@ -131,20 +134,6 @@ function App() {
         )}
       </header>
 
-      {/* Bonfire (Dark Mode Only) */}
-      {isDarkMode && (
-        <div className="bonfire-container">
-          <button 
-            className={`bonfire ${bonfireLit ? 'lit' : ''}`}
-            onClick={restAtBonfire}
-            title="Rest at Bonfire"
-          >
-            <div className="flame">🔥</div>
-            <div className="bonfire-base">⚱️</div>
-          </button>
-          {bonfireLit && <p className="bonfire-text">Bonfire Lit</p>}
-        </div>
-      )}
 
       {/* Task Input */}
       <div className="task-input-container">
@@ -160,18 +149,22 @@ function App() {
           className="add-button"
           onClick={addTask}
         >
-          {isDarkMode ? '⚔️ Add' : '+'}
+          <span className="button-text">{isDarkMode ? '⚔️ Add' : 'Add'}</span>
+          <span className="button-icon">{isDarkMode ? '⚔️' : '+'}</span>
         </button>
       </div>
 
       {/* Task List */}
       <div className="tasks-container">
         {tasks.length === 0 ? (
-          <p className="empty-state">
-            {isDarkMode 
-              ? "No quests yet. Begin your journey..." 
-              : "No tasks yet. Add one to get started."}
-          </p>
+          <div className="empty-state">
+            <div className="empty-icon">{isDarkMode ? '⚔️' : '📝'}</div>
+            <p className="empty-text">
+              {isDarkMode 
+                ? "No quests yet. Begin your journey..." 
+                : "No tasks yet. Add one to get started."}
+            </p>
+          </div>
         ) : (
           <ul className="task-list">
             {tasks.map(task => (
@@ -227,6 +220,24 @@ function App() {
         </div>
       )}
 
+            {/* Bonfire (Dark Mode Only) */}
+      {isDarkMode && (
+        <div className="bonfire-container">
+          <button 
+            className={`bonfire ${bonfireLit ? 'lit' : ''}`}
+            onClick={restAtBonfire}
+            title="Rest at Bonfire"
+          >
+            <div className='emojis-container'>
+            <div className="flame">🔥</div>
+            <div className="bonfire-base">⚱️</div>
+            </div>
+          </button>
+          {bonfireLit && <p className="bonfire-text">Bonfire Lit</p>}
+        </div>
+      )}
+
+
       {/* Achievement Toast (Dark Mode Only) */}
       {showAchievement && isDarkMode && (
         <div className="achievement-toast">
@@ -264,6 +275,7 @@ function App() {
           </p>
         )}
       </footer>
+    </div>
     </div>
   )
 }
